@@ -43,13 +43,13 @@
 #define GSR_NOISE 40 //rimozione del rumore
 
 //HM-10
-#define HM10_TX 8 //TX (da verificare) 
-#define HM10_RX 9 //RX (da verificare)
-#define HM10_BAUDRATE 9600 //baudrate (da verificare)
-#define HM10_BT_NAME "LW2v0" //nome del bluetooth
+//#define HM10_TX 8 //TX (da verificare) 
+//#define HM10_RX 9 //RX (da verificare)
+//#define HM10_BAUDRATE 9600 //baudrate (da verificare)
+//#define HM10_BT_NAME "LW2v0" //nome del bluetooth
 
 //DATA COLLECT
-#define INTERVAL_BETWEEN_DATA_COLLECT 1000 //DEBUG 1 sec
+#define INTERVAL_BETWEEN_DATA_COLLECT 10000 //DEBUG 1 sec
 //#define INTERVAL_BETWEEN_DATA_COLLECT 300000 //intervallo tra un data collect e un altro
 
 //costante per il debug su seriale
@@ -91,9 +91,9 @@ uint8_t getGSR() {
   int vcc = analogRead(GSR_VCC_PIN); //leggo la vcc applicata al sensore
 
   #ifdef DEBUG
-    Serial.print(F("GSR READ: "));
+    Serial.print(F("\nGSR READ: "));
     Serial.println(gsr);
-    Serial.print(F("VCC READ: "));
+    Serial.print(F("\nVCC READ: "));
     Serial.println(gsr);
   #endif
 
@@ -111,7 +111,7 @@ double getTemperature() {
   temp = floor(temp) + (floor(decimalPart * 10) / 10); //sommo la parte intera e una cifra dopo la virgola
   
   #ifdef DEBUG
-    Serial.print(F("TEMPERATURE READ: "));
+    Serial.print(F("\nTEMPERATURE READ: "));
     Serial.println(temp);
   #endif
   
@@ -125,7 +125,7 @@ long getTimestamp() {
   long timestamp = RTC.now().unixtime();
   
   #ifdef DEBUG
-    Serial.print(F("TIMESTAMP: "));   
+    Serial.print(F("\nTIMESTAMP: "));   
     Serial.println(timestamp);  
   #endif
   
@@ -156,14 +156,14 @@ void setupSensor() {
   if (!RTC.isrunning()) {
 
     #ifdef DEBUG
-      Serial.println(F("RTC is NOT running!"));
+      Serial.println(F("\nRTC is NOT running!\n"));
     #endif
     
     RTC.adjust(DateTime(__DATE__, __TIME__)); //setto RTC con il data e ora di compilazione dello sketch
   }
 
   #ifdef DEBUG
-    Serial.print(F("SENSORI SETTATI"));
+    Serial.print(F("\nSENSORI SETTATI\n"));
   #endif
   
 }
@@ -179,7 +179,7 @@ void wakeupSensor() {
   sensorState = LW_SENSOR_WAKE;
 
   #ifdef DEBUG
-    Serial.print(F("SENSORI SVEGLIATI"));
+    Serial.print(F("\nSENSORI SVEGLIATI\n"));
   #endif
   
 }
@@ -195,7 +195,7 @@ void sleepSensor() {
   sensorState = LW_SENSOR_SLEEP;
 
   #ifdef DEBUG
-    Serial.print(F("SENSORI ADDORMENTATI"));
+    Serial.print(F("\nSENSORI ADDORMENTATI\n"));
   #endif
   
 }
@@ -215,7 +215,7 @@ void collectData() {
   if (getSensorState() == LW_SENSOR_SLEEP) {
    
     #ifdef DEBUG
-      Serial.println(F("IMPOSSIBILE PRELEVARE I DATI SEI SENSORI PERCHE' SONO ADDORMENTATI"));
+      Serial.println(F("\n\nIMPOSSIBILE PRELEVARE I DATI SEI SENSORI PERCHE' SONO ADDORMENTATI\n\n"));
     #endif
 
     //i sensori sono addormentati non posso prelevare i dati
@@ -228,14 +228,14 @@ void collectData() {
   double temperature = getTemperature();
 
   #ifdef DEBUG
-    Serial.println(F("---------LETTURE DEI SENSORI (collectData())---------"));
+    Serial.println(F("\n\n---------LETTURE DEI SENSORI (collectData())---------\n"));
     Serial.print(F("TIMESTAMP: "));
     Serial.print(timestamp);
-    Serial.print(F("TEMPERATURA: "));
+    Serial.print(F("\nTEMPERATURA: "));
     Serial.print(temperature);
-    Serial.print(F("GSR: "));
+    Serial.print(F("\nGSR: "));
     Serial.print(gsr);
-    Serial.println(F("------------------"));
+    Serial.println(F("\n------------------\n\n"));
   #endif
   
 }
