@@ -26,6 +26,11 @@
 //FlashString
 #include <Flash.h>
 
+//Jack
+#include <Jack.h>
+#include <SoftwareSerialJack.h>
+#include <SoftwareSerial.h>
+
 
 //---COSTANTI--
 
@@ -43,14 +48,24 @@
 #define GSR_NOISE 40 //rimozione del rumore
 
 //HM-10
-//#define HM10_TX 8 //TX (da verificare) 
-//#define HM10_RX 9 //RX (da verificare)
+#define HM10_TX 8 //TX (da verificare) 
+#define HM10_RX 9 //RX (da verificare)
 //#define HM10_BAUDRATE 9600 //baudrate (da verificare)
 //#define HM10_BT_NAME "LW2v0" //nome del bluetooth
 
 //DATA COLLECT
 #define INTERVAL_BETWEEN_DATA_COLLECT 10000 //DEBUG 1 sec
 //#define INTERVAL_BETWEEN_DATA_COLLECT 300000 //intervallo tra un data collect e un altro
+
+//JACK
+#define TIMER_SEND_MESSAGE 5000 //intervallo tra l'invio dei messaggi
+#define TIMER_POLLING 1000 //intervallo tra un polling e l'altro del mezzo di trasmissione
+
+//CHIAVI PER IL MESSAGGIO
+#define TIMESTAMP_KEY "TMS" //chiave per timestamp
+#define GSR_KEY "GSR" //chiave per gsr
+#define TEMPERATURE_KEY "TMP" //chiave per temperatura
+
 
 //costante per il debug su seriale
 #define DEBUG 1
@@ -59,7 +74,7 @@
 //---VARIABILI---
 
 //stato dei sensori
-enum lwSensorState {
+typedef enum lwSensorState {
   LW_SENSOR_SLEEP, //sensori addormentati
   LW_SENSOR_WAKE //sensori svegli
 };
@@ -72,6 +87,16 @@ RTC_DS1307 RTC;
 //DATA COLLECT
 long timeLastDataCollect;
 
+//JACK
+SoftwareSerial bluetooth(HM10_TX, HM10_RX); //seriale per il modulo HM-10
+SoftwareSerialJack mmJTM(bluetooth); //Mezzo di trasmissione per Jack
+Jack jack(mmJTM, &onReceive, &onReceiveAck, &getTimestamp, TIMER_SEND_MESSAGE, TIMER_POLLING); //Jack
+
+
+
+//---HANDLER JACK---
+void onReceive(JData &message) {} //handler per messaggi dati in entrata
+void onReceiveAck(long id) {} //handler per ricezione ack
 
 
 //---GET DATA FROM SENSORS FUNCTIONS---
@@ -206,6 +231,12 @@ lwSensorState getSensorState() {
 }
 
 
+//---SETUP BLUETOOTH---
+void setupBluetooth() {
+  
+}
+
+
 //---DATA COLLECT FUNCTION---
 
 //preleva i dati dai sensori e li invia
@@ -237,6 +268,17 @@ void collectData() {
     Serial.print(gsr);
     Serial.println(F("\n------------------\n\n"));
   #endif
+
+  //creo il contenitore del messaggio
+  JData message;
+
+  //aggiungo i dati
+  message.add(TIMESTAMP_KEY, timestamp);
+  message.add(GSR_KEY, gsr);
+  message.add(TEMPERATURE_KEY, temperature);
+
+  //invio il messaggio
+  jack.send(message);
   
 }
 
@@ -251,11 +293,20 @@ void setup() {
   //inizializzo i sensori
   setupSensor();
 
+  //inizializzo il bluetooth
+  setupBluetooth();
+
+  //avvio jack
+  jack.start();
+
 }
 
 
 //---LOOP FUNCTION---
 void loop() {
+
+  //loop jack
+  jack.loop();
 
   //prelevo il tempo passato dall'inizio dell'esecuzione
   long now = millis();
