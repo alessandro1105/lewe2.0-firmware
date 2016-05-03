@@ -51,7 +51,7 @@
 #define HM10_TX 8 //TX 
 #define HM10_RX 9 //RX
 #define HM10_BAUDRATE 9600 //baudrate (da verificare)
-#define HM10_BT_NAME "LW2v0" //nome del bluetooth
+//#define HM10_BT_NAME "LW2v0" //nome del bluetooth
 
 //DATA COLLECT
 #define INTERVAL_BETWEEN_DATA_COLLECT 10000 //DEBUG 1 sec
@@ -235,25 +235,7 @@ lwSensorState getSensorState() {
 void setupBluetooth() {
   //avvio la seriale
   bluetooth.begin(HM10_BAUDRATE);
-
-  //creo buffer per inviare il comando
-  char cmd[50];
-
-  //costruisco il comando
-  strcpy(cmd, "AT+NAME[\0");
-  strcat(cmd, HM10_BT_NAME);
-  strcat(cmd, "]\0");
-
-  //cambio il nome al sensore
-  bluetooth.print(cmd);
-
-  //aspetto che il modulo possa eseguire il comando
-  delay(1000);
-
-  //svuoto il buffer
-  while(bluetooth.available() && bluetooth.read())
-    ;
-
+  
 }
 
 
