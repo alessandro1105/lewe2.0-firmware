@@ -95,7 +95,7 @@ Jack jack(mmJTM, &onReceive, &onReceiveAck, &getTimestamp, TIMER_SEND_MESSAGE, T
 
 
 //---HANDLER JACK---
-void onReceive(JData &message) {} //handler per messaggi dati in entrata
+void onReceive(JData &message, long id) {} //handler per messaggi dati in entrata
 void onReceiveAck(long id) {} //handler per ricezione ack
 
 
