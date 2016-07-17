@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
    @author         Alessandro Pasqualini <alessandro.pasqualini.1105@gmail.com>
    @url            https://github.com/alessandro1105
 */
@@ -38,13 +38,13 @@
 #define VREF 1.1 //tensione di riferimento per il ADC
 
 //LM35
-#define LM35_ENABLE_PIN 4 //abilitazione
+#define LM35_ENABLE_PIN 5 //abilitazione
 #define LM35_PIN A0 //lettura
 
 //GSR
-#define GSR_ENABLE_PIN 5 //abilitazione
-#define GSR_PIN A1 //lettura
-#define GSR_VCC_PIN A2 //lettura ddp applicata
+#define GSR_ENABLE_PIN 4 //abilitazione
+#define GSR_PIN A2 //lettura
+#define GSR_VCC_PIN A1 //lettura ddp applicata
 #define GSR_NOISE 40 //rimozione del rumore
 
 //HM-10
@@ -54,8 +54,8 @@
 //#define HM10_BT_NAME "LW2v0" //nome del bluetooth
 
 //DATA COLLECT
-#define INTERVAL_BETWEEN_DATA_COLLECT 10000 //DEBUG 1 sec
-//#define INTERVAL_BETWEEN_DATA_COLLECT 300000 //intervallo tra un data collect e un altro
+#define INTERVAL_BETWEEN_DATA_COLLECT 30000 //DEBUG 10 sec
+//#define INTERVAL_BETWEEN_DATA_COLLECT 300000 //intervallo tra un data collect e un altro (5 min)
 
 //JACK
 #define TIMER_SEND_MESSAGE 5000 //intervallo tra l'invio dei messaggi
@@ -103,7 +103,7 @@ void onReceiveAck(long id) {} //handler per ricezione ack
 
 //legge e coverte in percentuale la lettura del sensore GSR
 uint8_t getGSR() {
-  
+
   int gsr = analogRead(GSR_PIN); //prelevo la lettura dal sensore
 
   //rimozione del rumore
@@ -115,47 +115,47 @@ uint8_t getGSR() {
 
   int vcc = analogRead(GSR_VCC_PIN); //leggo la vcc applicata al sensore
 
-  #ifdef DEBUG
-    Serial.print(F("\nGSR READ: "));
-    Serial.println(gsr);
-    Serial.print(F("\nVCC READ: "));
-    Serial.println(gsr);
-  #endif
+#ifdef DEBUG
+  Serial.print(F("\nGSR READ: "));
+  Serial.println(gsr);
+  Serial.print(F("\nVCC READ: "));
+  Serial.println(gsr);
+#endif
 
   return (uint8_t) (100.0 * gsr / vcc); //ritorno la lettura in percentuale
-  
+
 }
 
 //legge e converte in gradi C la lettura del sensore LM35
 double getTemperature() {
-  
+
   double temp = analogRead(LM35_PIN); //prelevo la lettura dal sensore
   temp = (temp * VREF / 1023.0) * 100.0; //converto la temperatura letta in gradi
-  
+
   double decimalPart = temp - floor(temp); //ricavo la parte decimale
   temp = floor(temp) + (floor(decimalPart * 10) / 10); //sommo la parte intera e una cifra dopo la virgola
-  
-  #ifdef DEBUG
-    Serial.print(F("\nTEMPERATURE READ: "));
-    Serial.println(temp);
-  #endif
-  
+
+#ifdef DEBUG
+  Serial.print(F("\nTEMPERATURE READ: "));
+  Serial.println(temp);
+#endif
+
   return temp; //restituisco la temperatura con un decimale
-  
+
 }
 
 //ottiene il timestamp da RTC
 long getTimestamp() {
 
   long timestamp = RTC.now().unixtime();
-  
-  #ifdef DEBUG
-    Serial.print(F("\nTIMESTAMP: "));   
-    Serial.println(timestamp);  
-  #endif
-  
+
+#ifdef DEBUG
+  Serial.print(F("\nTIMESTAMP: "));
+  Serial.println(timestamp);
+#endif
+
   return timestamp; //get unix timestamp;
-  
+
 }
 
 
@@ -180,17 +180,17 @@ void setupSensor() {
   //se RTC non è partito imposto l'ora
   if (!RTC.isrunning()) {
 
-    #ifdef DEBUG
-      Serial.println(F("\nRTC is NOT running!\n"));
-    #endif
-    
+#ifdef DEBUG
+    Serial.println(F("\nRTC is NOT running!\n"));
+#endif
+
     RTC.adjust(DateTime(__DATE__, __TIME__)); //setto RTC con il data e ora di compilazione dello sketch
   }
 
-  #ifdef DEBUG
-    Serial.print(F("\nSENSORI SETTATI\n"));
-  #endif
-  
+#ifdef DEBUG
+  Serial.print(F("\nSENSORI SETTATI\n"));
+#endif
+
 }
 
 //sveglia i sensori
@@ -203,10 +203,10 @@ void wakeupSensor() {
   //imposto lo stato dei sensori
   sensorState = LW_SENSOR_WAKE;
 
-  #ifdef DEBUG
-    Serial.print(F("\nSENSORI SVEGLIATI\n"));
-  #endif
-  
+#ifdef DEBUG
+  Serial.print(F("\nSENSORI SVEGLIATI\n"));
+#endif
+
 }
 
 //addormenta i sensori per risparmiare energia
@@ -219,10 +219,10 @@ void sleepSensor() {
   //imposto lo stato dei sensori
   sensorState = LW_SENSOR_SLEEP;
 
-  #ifdef DEBUG
-    Serial.print(F("\nSENSORI ADDORMENTATI\n"));
-  #endif
-  
+#ifdef DEBUG
+  Serial.print(F("\nSENSORI ADDORMENTATI\n"));
+#endif
+
 }
 
 //ritorna lo stato corrente dei sensori (svegli, addormentati)
@@ -235,7 +235,7 @@ lwSensorState getSensorState() {
 void setupBluetooth() {
   //avvio la seriale
   bluetooth.begin(HM10_BAUDRATE);
-  
+
 }
 
 
@@ -246,10 +246,10 @@ void collectData() {
 
   //verifico che i sensori non siano addormentati (ovvero siano svegli)
   if (getSensorState() == LW_SENSOR_SLEEP) {
-   
-    #ifdef DEBUG
-      Serial.println(F("\n\nIMPOSSIBILE PRELEVARE I DATI SEI SENSORI PERCHE' SONO ADDORMENTATI\n\n"));
-    #endif
+
+#ifdef DEBUG
+    Serial.println(F("\n\nIMPOSSIBILE PRELEVARE I DATI SEI SENSORI PERCHE' SONO ADDORMENTATI\n\n"));
+#endif
 
     //i sensori sono addormentati non posso prelevare i dati
     return;
@@ -260,16 +260,16 @@ void collectData() {
   uint8_t gsr = getGSR();
   double temperature = getTemperature();
 
-  #ifdef DEBUG
-    Serial.println(F("\n\n---------LETTURE DEI SENSORI (collectData())---------\n"));
-    Serial.print(F("TIMESTAMP: "));
-    Serial.print(timestamp);
-    Serial.print(F("\nTEMPERATURA: "));
-    Serial.print(temperature);
-    Serial.print(F("\nGSR: "));
-    Serial.print(gsr);
-    Serial.println(F("\n------------------\n\n"));
-  #endif
+#ifdef DEBUG
+  Serial.println(F("\n\n---------LETTURE DEI SENSORI (collectData())---------\n"));
+  Serial.print(F("TIMESTAMP: "));
+  Serial.print(timestamp);
+  Serial.print(F("\nTEMPERATURA: "));
+  Serial.print(temperature);
+  Serial.print(F("\nGSR: "));
+  Serial.print(gsr);
+  Serial.println(F("\n------------------\n\n"));
+#endif
 
   //creo il contenitore del messaggio
   JData message;
@@ -281,16 +281,16 @@ void collectData() {
 
   //invio il messaggio
   jack.send(message);
-  
+
 }
 
 
 //---SETUP FUNCTION---
 void setup() {
 
-  #ifdef DEBUG
-    Serial.begin(9600);
-  #endif
+#ifdef DEBUG
+  Serial.begin(9600);
+#endif
 
   //inizializzo i sensori
   setupSensor();
@@ -325,12 +325,12 @@ void loop() {
     //salvo il tempo passato dall'inizio dell'esecuzione all'ultimo data collect
     timeLastDataCollect = now;
 
-  //se è stato raggiunta la metà dell'intervallo di invio
+    //se è stato raggiunta la metà dell'intervallo di invio
   } else if (getSensorState() == LW_SENSOR_SLEEP && now - timeLastDataCollect >= (int) (INTERVAL_BETWEEN_DATA_COLLECT / 2)) {
 
     //sveglio i sensori
     wakeupSensor();
-    
+
   }
 
 }
